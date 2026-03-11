@@ -1,0 +1,11 @@
+python-telegram-bot[job-queue]==21.*
+python-dotenv
+pdf2docx
+docx2pdf
+Pillow
+img2pdf
+pdfplumber
+openpyxl
+reportlab
+pypdf
+PyMuPDF
