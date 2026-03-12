@@ -1,4 +1,4 @@
-python-telegram-bot[job-queue]==21.*
+python-telegram-bot==21.*
 python-dotenv
 pdf2docx
 docx2pdf
@@ -9,3 +9,5 @@ openpyxl
 reportlab
 pypdf
 PyMuPDF
+xhtml2pdf
+python-docx
