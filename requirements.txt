@@ -9,5 +9,4 @@ openpyxl
 reportlab
 pypdf
 PyMuPDF
-xhtml2pdf
 python-docx
