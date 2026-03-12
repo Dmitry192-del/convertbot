@@ -820,11 +820,59 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not info:
             await query.edit_message_text("❌ Сессия устарела. Отправь файл заново.")
             return
+
         quality_map = {"light": 85, "medium": 60, "heavy": 30}
-        context.user_data["compress_quality"] = quality_map.get(level, 60)
-        # Эмулируем action=compress_do
-        query.data = f"act|compress_do|{key}"
-        await handle_callback(update, context)
+        compress_quality = quality_map.get(level, 60)
+
+        stop_event = asyncio.Event()
+        progress_task = asyncio.create_task(
+            animated_progress(context, query.message.chat_id,
+                              query.message.message_id, "Сжимаю PDF", stop_event)
+        )
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmp      = Path(tmpdir)
+                src_path = tmp / "input.pdf"
+                dst_path = tmp / "compressed.pdf"
+
+                tg_file = await context.bot.get_file(info["file_id"])
+                await tg_file.download_to_drive(str(src_path))
+
+                size_before, size_after = await asyncio.get_event_loop().run_in_executor(
+                    None, conv_compress_pdf_quality, src_path, dst_path, compress_quality
+                )
+
+                stop_event.set()
+                await progress_task
+
+                saved_kb = (size_before - size_after) / 1024
+                ratio    = (1 - size_after / size_before) * 100 if size_before else 0
+                stem     = Path(info["name"]).stem
+                out_name = f"{stem}_compressed.pdf"
+
+                await query.edit_message_text(
+                    f"✅ Сжато!\n\n"
+                    f"📦 До: *{size_before/1024:.0f} КБ*\n"
+                    f"📦 После: *{size_after/1024:.0f} КБ*\n"
+                    f"💾 Сэкономлено: *{saved_kb:.0f} КБ ({ratio:.0f}%)*",
+                    parse_mode="Markdown",
+                )
+                with open(dst_path, "rb") as f:
+                    await context.bot.send_document(
+                        chat_id=query.message.chat_id,
+                        document=f,
+                        filename=out_name,
+                        caption=f"🗜 {info['name']} → {out_name}",
+                    )
+                record_action(user.id, user.username or "",
+                              "compress", f"{info['name']} ({ratio:.0f}% сжато)")
+        except Exception as exc:
+            stop_event.set()
+            await progress_task
+            logger.exception("Compress failed")
+            await query.edit_message_text(
+                f"❌ Ошибка сжатия:\n`{exc}`", parse_mode="Markdown"
+            )
         return
 
     # ── conv|key|tgt_ext ──
