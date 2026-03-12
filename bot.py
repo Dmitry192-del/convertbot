@@ -22,6 +22,20 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+# Скачиваем шрифт при старте если его нет рядом с bot.py
+def _ensure_font() -> None:
+    font_path = Path(__file__).parent / "DejaVuSans.ttf"
+    if not font_path.exists():
+        try:
+            import urllib.request
+            url = "https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2"
+            # Пробуем прямую ссылку на ttf
+            ttf_url = "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf"
+            urllib.request.urlretrieve(ttf_url, str(font_path))
+            print(f"✅ Шрифт скачан: {font_path}")
+        except Exception as e:
+            print(f"⚠️ Не удалось скачать шрифт: {e}")
+
 import uuid
 import json
 import time
@@ -42,6 +56,9 @@ from telegram.ext import (
     ConversationHandler,
     filters,
 )
+
+# Скачиваем шрифт при импорте модуля
+_ensure_font()
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
