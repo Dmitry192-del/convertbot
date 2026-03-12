@@ -1,2 +1,2 @@
 [phases.setup]
-nixPkgs = ["libreoffice", "liberation_ttf"]
+nixPkgs = ["dejavu_fonts", "liberation_ttf"]
