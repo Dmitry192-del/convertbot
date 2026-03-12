@@ -326,17 +326,37 @@ def conv_docx_to_pdf_pure(src: Path, dst: Path) -> None:
 
 
 def conv_html_to_pdf_pure(src: Path, dst: Path) -> None:
-    """HTML → PDF через xhtml2pdf (чистый Python)."""
-    try:
-        from xhtml2pdf import pisa
-        with open(src, "rb") as f:
-            html_content = f.read()
-        with open(dst, "wb") as out:
-            result = pisa.CreatePDF(html_content, dest=out)
-        if result.err:
-            raise RuntimeError("xhtml2pdf вернул ошибку")
-    except ImportError:
-        raise RuntimeError("pip install xhtml2pdf")
+    """HTML → PDF: извлекаем текст и рендерим через reportlab."""
+    import re
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+    font_name, _ = _register_cyrillic_font()
+    base_styles = getSampleStyleSheet()
+    normal = ParagraphStyle("HN", parent=base_styles["Normal"],
+                            fontName=font_name, fontSize=11, leading=16)
+
+    with open(src, "r", encoding="utf-8", errors="ignore") as f:
+        html = f.read()
+
+    # Убираем теги, оставляем текст
+    text = re.sub(r"<[^>]+>", " ", html)
+    text = re.sub(r"&nbsp;", " ", text)
+    text = re.sub(r"&amp;", "&", text)
+    text = re.sub(r"&lt;", "<", text)
+    text = re.sub(r"&gt;", ">", text)
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+
+    doc = SimpleDocTemplate(str(dst), pagesize=A4,
+                            leftMargin=20*mm, rightMargin=20*mm,
+                            topMargin=20*mm, bottomMargin=20*mm)
+    elements = []
+    for line in lines:
+        elements.append(Paragraph(line, normal))
+        elements.append(Spacer(1, 2*mm))
+    doc.build(elements)
 
 
 def conv_office_to_pdf(src: Path, dst: Path) -> None:
