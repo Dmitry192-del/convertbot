@@ -82,7 +82,6 @@ CONVERSIONS: dict[tuple[str, str], str] = {
     ("jpeg", "pdf"):  "JPEG → PDF",
     ("png",  "pdf"):  "PNG → PDF",
     ("docx", "pdf"):  "WORD → PDF",
-    ("doc",  "pdf"):  "DOC → PDF",
     ("pptx", "pdf"):  "POWERPOINT → PDF",
     ("ppt",  "pdf"):  "PPT → PDF",
     ("xlsx", "pdf"):  "EXCEL → PDF",
@@ -392,8 +391,6 @@ def conv_office_to_pdf(src: Path, dst: Path) -> None:
     if ext == ".docx":
         conv_docx_to_pdf_pure(src, dst)
         return
-    if ext == ".doc":
-        raise RuntimeError("Формат .doc не поддерживается на сервере. Пересохрани файл как .docx в Word: Файл → Сохранить как → Word документ (.docx)")
     if ext == ".html":
         conv_html_to_pdf_pure(src, dst)
         return
