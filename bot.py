@@ -211,22 +211,23 @@ def _register_cyrillic_font():
     from reportlab.pdfbase.ttfonts import TTFont
     import glob
 
+    # Шрифт рядом с bot.py (залитый в репозиторий)
+    bot_dir = Path(__file__).parent
     candidates = [
-        # Linux (Railway/Render/Ubuntu)
+        str(bot_dir / "DejaVuSans.ttf"),   # в папке проекта
+        # Linux
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
         "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
-        "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf",
         # Windows
         "C:/Windows/Fonts/arial.ttf",
         "C:/Windows/Fonts/calibri.ttf",
-        "C:/Windows/Fonts/times.ttf",
         # macOS
         "/System/Library/Fonts/Supplemental/Arial.ttf",
-        "/Library/Fonts/Arial.ttf",
     ]
-    candidates += glob.glob("C:/Windows/Fonts/*.ttf")
+    candidates += glob.glob(str(bot_dir / "*.ttf"))
     candidates += glob.glob("/usr/share/fonts/truetype/**/*.ttf", recursive=True)
+    candidates += glob.glob("C:/Windows/Fonts/*.ttf")
 
     for path in candidates:
         try:
