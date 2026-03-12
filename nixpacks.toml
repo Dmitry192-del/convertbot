@@ -1,5 +1,0 @@
-[phases.setup]
-nixPkgs = ["dejavu_fonts", "fontconfig"]
-
-[phases.build]
-cmds = ["fc-cache -fv && pip install -r requirements.txt"]
