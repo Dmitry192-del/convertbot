@@ -389,9 +389,11 @@ def conv_office_to_pdf(src: Path, dst: Path) -> None:
     if ext in (".xlsx", ".xls"):
         conv_xlsx_to_pdf(src, dst)
         return
-    if ext in (".docx", ".doc"):
+    if ext == ".docx":
         conv_docx_to_pdf_pure(src, dst)
         return
+    if ext == ".doc":
+        raise RuntimeError("Формат .doc не поддерживается на сервере. Пересохрани файл как .docx в Word: Файл → Сохранить как → Word документ (.docx)")
     if ext == ".html":
         conv_html_to_pdf_pure(src, dst)
         return
@@ -399,7 +401,7 @@ def conv_office_to_pdf(src: Path, dst: Path) -> None:
     try:
         libreoffice_convert(src, "pdf", dst)
     except FileNotFoundError:
-        raise RuntimeError("Конвертация PPTX→PDF требует LibreOffice. На текущем сервере он недоступен.")
+        raise RuntimeError("Конвертация PPTX→PDF на сервере недоступна. Попробуй на компьютере.")
 
 
 def conv_pdf_to_docx(src: Path, dst: Path) -> None:
