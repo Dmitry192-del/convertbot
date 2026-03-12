@@ -284,19 +284,77 @@ def conv_xlsx_to_pdf(src: Path, dst: Path) -> None:
     doc.build(elements)
 
 
+def conv_docx_to_pdf_pure(src: Path, dst: Path) -> None:
+    """DOCX → PDF через docx2pdf (Windows) или docx2python + reportlab (Linux)."""
+    # Сначала пробуем docx2pdf (работает на Windows с MS Office)
+    try:
+        from docx2pdf import convert
+        convert(str(src), str(dst))
+        return
+    except Exception:
+        pass
+
+    # Fallback: извлекаем текст через python-docx и рендерим через reportlab
+    try:
+        import docx
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.units import mm
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+        font_name, font_bold = _register_cyrillic_font()
+        base_styles = getSampleStyleSheet()
+        normal = ParagraphStyle("N", parent=base_styles["Normal"], fontName=font_name, fontSize=11, leading=16)
+        h1     = ParagraphStyle("H1", parent=base_styles["Heading1"], fontName=font_bold, fontSize=14, leading=20)
+
+        document = docx.Document(str(src))
+        doc = SimpleDocTemplate(str(dst), pagesize=A4,
+                                leftMargin=20*mm, rightMargin=20*mm,
+                                topMargin=20*mm, bottomMargin=20*mm)
+        elements = []
+        for para in document.paragraphs:
+            text = para.text.strip()
+            if not text:
+                elements.append(Spacer(1, 4*mm))
+                continue
+            style = h1 if para.style.name.startswith("Heading") else normal
+            elements.append(Paragraph(text, style))
+        doc.build(elements)
+        return
+    except Exception as e:
+        raise RuntimeError(f"Не удалось конвертировать DOCX: {e}")
+
+
+def conv_html_to_pdf_pure(src: Path, dst: Path) -> None:
+    """HTML → PDF через xhtml2pdf (чистый Python)."""
+    try:
+        from xhtml2pdf import pisa
+        with open(src, "rb") as f:
+            html_content = f.read()
+        with open(dst, "wb") as out:
+            result = pisa.CreatePDF(html_content, dest=out)
+        if result.err:
+            raise RuntimeError("xhtml2pdf вернул ошибку")
+    except ImportError:
+        raise RuntimeError("pip install xhtml2pdf")
+
+
 def conv_office_to_pdf(src: Path, dst: Path) -> None:
     ext = src.suffix.lower()
     if ext in (".xlsx", ".xls"):
         conv_xlsx_to_pdf(src, dst)
         return
+    if ext in (".docx", ".doc"):
+        conv_docx_to_pdf_pure(src, dst)
+        return
+    if ext == ".html":
+        conv_html_to_pdf_pure(src, dst)
+        return
+    # PPTX/PPT — пробуем LibreOffice, если нет — сообщаем
     try:
-        if ext in (".docx", ".doc"):
-            from docx2pdf import convert
-            convert(str(src), str(dst))
-            return
-    except Exception:
-        pass
-    libreoffice_convert(src, "pdf", dst)
+        libreoffice_convert(src, "pdf", dst)
+    except FileNotFoundError:
+        raise RuntimeError("Конвертация PPTX→PDF требует LibreOffice. На текущем сервере он недоступен.")
 
 
 def conv_pdf_to_docx(src: Path, dst: Path) -> None:
