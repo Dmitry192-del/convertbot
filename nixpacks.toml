@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["libreoffice", "dejavu_fonts", "fontconfig"]
+
+[phases.build]
+cmds = ["fc-cache -fv && pip install -r requirements.txt"]
