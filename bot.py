@@ -212,14 +212,21 @@ def _register_cyrillic_font():
     import glob
 
     candidates = [
+        # Linux (Railway/Render/Ubuntu)
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+        "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf",
+        # Windows
         "C:/Windows/Fonts/arial.ttf",
         "C:/Windows/Fonts/calibri.ttf",
         "C:/Windows/Fonts/times.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        # macOS
         "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/Library/Fonts/Arial.ttf",
     ]
     candidates += glob.glob("C:/Windows/Fonts/*.ttf")
+    candidates += glob.glob("/usr/share/fonts/truetype/**/*.ttf", recursive=True)
 
     for path in candidates:
         try:
