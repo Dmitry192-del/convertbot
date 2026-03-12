@@ -850,6 +850,14 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 stem     = Path(info["name"]).stem
                 out_name = f"{stem}_compressed.pdf"
 
+                if size_after >= size_before:
+                    await query.edit_message_text(
+                        f"ℹ️ PDF уже оптимизирован — сжать не получилось.\n"
+                        f"Размер не изменился: *{size_before/1024:.0f} КБ*",
+                        parse_mode="Markdown",
+                    )
+                    return
+
                 await query.edit_message_text(
                     f"✅ Сжато!\n\n"
                     f"📦 До: *{size_before/1024:.0f} КБ*\n"
