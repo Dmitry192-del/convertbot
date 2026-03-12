@@ -82,8 +82,6 @@ CONVERSIONS: dict[tuple[str, str], str] = {
     ("jpeg", "pdf"):  "JPEG → PDF",
     ("png",  "pdf"):  "PNG → PDF",
     ("docx", "pdf"):  "WORD → PDF",
-    ("pptx", "pdf"):  "POWERPOINT → PDF",
-    ("ppt",  "pdf"):  "PPT → PDF",
     ("xlsx", "pdf"):  "EXCEL → PDF",
     ("xls",  "pdf"):  "XLS → PDF",
     ("html", "pdf"):  "HTML → PDF",
@@ -97,7 +95,6 @@ for (src, tgt) in CONVERSIONS:
 
 FORMAT_EMOJI = {
     "pdf": "📕", "docx": "📘", "doc": "📘",
-    "pptx": "📙", "ppt": "📙",
     "xlsx": "📗", "xls": "📗",
     "jpg": "🖼", "jpeg": "🖼", "png": "🖼",
     "html": "🌐",
